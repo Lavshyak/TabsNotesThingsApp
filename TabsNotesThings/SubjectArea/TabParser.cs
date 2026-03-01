@@ -90,17 +90,53 @@ public class TabParser
     
     public record ParseNoteResult(NoteEnum? NoteEnum, int? Octave, int? StartIdx, int? Length, bool IsError);
 
-    public void ParseNote(string noteStringFromTab)
+    public ParseNoteResult ParseNote(string noteStringFromTab)
     {
-        // " A 2" -> "A" ParseNoteResult(NoteEnum = NoteEnum.A, Octave = null, StartIdx = 1, Length = 1, IsError = false)
-        // "A# G" -> "A#" ParseNoteResult(NoteEnum = NoteEnum.ASharp, Octave = null, 0, 2, false)
-        // " F#4 6" -> "F#4" ParseNoteResult(NoteEnum.FSharp, 4, 1, 3, false)
-        for (int i = 0; i < noteStringFromTab.Length; i++)
-        {
-            
-        }
-    }
+        if (string.IsNullOrWhiteSpace(noteStringFromTab))
+            return new(null, null, null, null, true);
 
+        var s = noteStringFromTab;
+        int i = 0;
+
+        while (i < s.Length && s[i] == ' ')
+            i++;
+
+        if (i >= s.Length)
+            return new(null, null, null, null, true);
+
+        int start = i;
+
+        // Letter A-G
+        char c = s[i];
+        if (c < 'A' || c > 'G')
+            return new(null, null, null, null, true);
+
+        i++;
+
+        // Optional #
+        if (i < s.Length && s[i] == '#')
+            i++;
+
+        var noteName = s.Substring(start, i - start);
+
+        if (!NotesEnumToStrings.Instance.NoteNameToNoteEnumDict
+                .TryGetValue(noteName, out var noteEnum))
+            return new(null, null, null, null, true);
+
+        int? octave = null;
+
+        // Optional octave digit
+        if (i < s.Length && char.IsDigit(s[i]))
+        {
+            octave = s[i] - '0';
+            i++;
+        }
+
+        int length = i - start;
+
+        return new(noteEnum, octave, start, length, false);
+    }
+    
     public void FromTabString(string tab,
         out List<string> rowRootKeys,
         out List<List<int?>> rows)
