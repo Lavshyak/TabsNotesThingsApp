@@ -106,26 +106,28 @@ public class TabParser
 
         int start = i;
 
-        // Letter A-G
         char c = s[i];
-        if (c < 'A' || c > 'G')
+        if (!char.IsLetter(c))
+            return new(null, null, null, null, true);
+
+        c = char.ToLowerInvariant(c);
+        if (c < 'a' || c > 'g')
             return new(null, null, null, null, true);
 
         i++;
 
-        // Optional #
+        // optional #
         if (i < s.Length && s[i] == '#')
             i++;
 
         var noteName = s.Substring(start, i - start);
 
-        if (!NotesEnumToStrings.Instance.NoteNameToNoteEnumDict
-                .TryGetValue(noteName, out var noteEnum))
+        if (!NotesEnumToStrings.Instance.LowerNoteNameToNoteEnumDict
+                .TryGetValue(noteName.ToLowerInvariant(), out var noteEnum))
             return new(null, null, null, null, true);
 
         int? octave = null;
 
-        // Optional octave digit
         if (i < s.Length && char.IsDigit(s[i]))
         {
             octave = s[i] - '0';
