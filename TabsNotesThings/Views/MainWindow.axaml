@@ -1,0 +1,93 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TabsNotesThings.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="TabsNotesThings.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="TabsNotesThings">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel />
+        <!--<d:DesignInstance Type="vm:MainWindowViewModel"
+                          IsDesignTimeCreatable="True"/>-->
+    </Design.DataContext>
+
+
+    <StackPanel Orientation="Vertical">
+        <TextBox Text="{Binding InputFieldText}" AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="Consolas"
+                 BorderBrush="{Binding InputBorderBrush}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        </TextBox>
+
+        <Button Content="import" Command="{Binding ImportCommand}">
+        </Button>
+
+        <ItemsControl ItemsSource="{Binding NoteRowTexts}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Text="{Binding RootNoteText.Text }" Width="40" MinWidth="10" IsReadOnly="False"
+                                 Margin="0 0 6 1"
+                                 Padding="5 0 0 0"
+                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center" />
+                        <ItemsControl ItemsSource="{Binding NoteTexts}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Text}" Width="20" MinWidth="10"
+                                             TextWrapping="WrapWithOverflow" IsReadOnly="False" Padding="0"
+                                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                             BorderThickness="1" BorderBrush="LightGray" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Content="Import"></Button>
+
+
+        <!--<ItemsControl ItemsSource="{Binding NoteRows}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Text="{Binding RootNote.KeyOctaveString }"
+                                 Width="40"
+                                 IsReadOnly="True" />
+                        <ItemsControl ItemsSource="{Binding Notes}">
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding KeyOctaveString}"
+                                             Width="40"
+                                             IsReadOnly="True" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>-->
+
+
+    </StackPanel>
+
+</Window>
