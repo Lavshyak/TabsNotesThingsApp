@@ -138,6 +138,63 @@ public class TabParser
 
         return new(noteEnum, octave, start, length, false);
     }
+
+    public ParseNoteResult ParseNote(ReadOnlySpan<char> span)
+    {
+        if (span.IsEmpty)
+            return new(null, null, null, null, true);
+
+        int i = 0;
+
+        // skip spaces
+        while (i < span.Length && span[i] == ' ')
+            i++;
+
+        if (i >= span.Length)
+            return new(null, null, null, null, true);
+
+        int start = i;
+        char c = span[i];
+
+        // Case 1: digit -> octave only
+        if (char.IsDigit(c))
+        {
+            int octave = c - '0';
+            return new(null, octave, start, null, false);
+        }
+
+        // Case 2: note
+        if (!char.IsLetter(c))
+            return new(null, null, null, null, true);
+
+        char lc = char.ToLowerInvariant(c);
+        if (lc < 'a' || lc > 'g')
+            return new(null, null, null, null, true);
+
+        i++;
+
+        // optional #
+        if (i < span.Length && span[i] == '#')
+            i++;
+
+        var noteName = span.Slice(start, i - start).ToString();
+
+        if (!NotesEnumToStrings.Instance.LowerNoteNameToNoteEnumDict
+                .TryGetValue(noteName.ToLowerInvariant(), out var noteEnum))
+            return new(null, null, null, null, true);
+
+        int? octaveOpt = null;
+
+        // optional octave digit
+        if (i < span.Length && char.IsDigit(span[i]))
+        {
+            octaveOpt = span[i] - '0';
+            i++;
+        }
+
+        int length = i - start;
+        return new(noteEnum, octaveOpt, start, length, false);
+    }
     
     public void FromTabString(string tab,
         out List<string> rowRootKeys,
