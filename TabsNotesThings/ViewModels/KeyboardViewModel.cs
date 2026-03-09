@@ -5,11 +5,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TabsNotesThings.ViewModels.Printers;
 using TabsNotesThings.ViewModels.ReadOnlyModels;
+using TabsNotesThings.Views;
 
 namespace TabsNotesThings.ViewModels;
 
@@ -172,19 +175,36 @@ public partial class KeyboardViewModel : ViewModelBase
         HalfToneIdxAndNoteStrs = Enumerable.Range(from, to - from+1).Select(htIdx =>
                 new HalfToneIdxAndNoteStr(htIdx, NoteStrs.Instance.ToStringNoteOctaveFromHalfToneIdx(htIdx)))
             .ToImmutableArray();
-
+        
         if (Design.IsDesignMode)
         {
-            HandleInputCommand.Execute(new TabViewModel.Tab2([
-                        new NoteMayBeWithOctave(NoteEnum.FSharp, 2), null, new NoteMayBeWithOctave(NoteEnum.B, null)
+            Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    new TabViewModel(this).ParseInputCommand.Execute(null);
+                });
+            });
+            
+            
+            /*HandleInputCommand.Execute(new TabViewModel.Tab2([
+                        new NoteMayBeWithOctave(NoteEnum.FSharp, 2), 
+                        null, 
+                        new NoteMayBeWithOctave(NoteEnum.B, null),
+                        new NoteMayBeWithOctave(NoteEnum.F, null),
+                        new NoteMayBeWithOctave(NoteEnum.CSharp, null),
+                        new NoteMayBeWithOctave(NoteEnum.A, null),
+                        new NoteMayBeWithOctave(NoteEnum.D, null),
+                        new NoteMayBeWithOctave(NoteEnum.G, null),
                     ],
                     [
                         [18, null, null],
                         [5, null, 5],
-                        [null, null, 13]
+                        [null, null, 13],
                     ]
                 )
-            );
+            );*/
         }
     }
 

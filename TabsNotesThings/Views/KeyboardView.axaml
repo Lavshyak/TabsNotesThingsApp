@@ -16,16 +16,19 @@
                           IsDesignTimeCreatable="True" />-->
     </Design.DataContext>
     <StackPanel>
-        
+
         <StackPanel Orientation="Horizontal">
             <ItemsControl ItemsSource="{Binding SelectedHalfToneIdxAndNoteStrs}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ComboBox ItemsSource="{Binding Variants}" 
+                        <ComboBox ItemsSource="{Binding Variants}"
                                   SelectedIndex="{Binding SelectedIndex}"
                                   IsEnabled="{Binding IsEnabled}"
-                                  Width="100"
-                                  >
+                                  Width="80"
+                                  Height="24"
+                                  MinHeight="24"
+                                  FontSize="14" 
+                                  Padding="0 0 0 0">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <Label Content="{Binding NoteStr}"></Label>
@@ -35,7 +38,13 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBox Text="{Binding View}" FontFamily="Consolas" FontSize="16" LineHeight="35" Margin="0 0 0 0" Padding="8 0 0 0 "></TextBox>
+            <TextBox Text="{Binding View}" 
+                     FontFamily="Consolas" 
+                     FontSize="16" 
+                     LineHeight="24" 
+                     Margin="0 0 0 0"
+                     Padding="8 0 0 0 ">
+            </TextBox>
         </StackPanel>
     </StackPanel>
 </UserControl>

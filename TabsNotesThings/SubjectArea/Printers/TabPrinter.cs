@@ -16,7 +16,7 @@ public class TabPrinter
     {
         foreach (var row in rows)
         {
-            string[] strs = row.Select(x => x.HasValue ? x.Value.ToString() : "").ToArray();
+            string[] strs = row.Select(x => x.HasValue ? x.Value.ToString() : "·").ToArray();
             var maxLen = strs.Max(s => s.Length);
             for (int i = 0; i < strs.Length; i++)
             {
@@ -68,7 +68,7 @@ public class TabPrinter
         var rowsSbs = tab.Roots.Select(_ => new StringBuilder()).ToImmutableArray();
         
         var rootStrs =
-            tab.Roots.Select(r => r != null ? NoteStrs.Instance.ToStringNoteOctave(r.NoteEnum, r.Octave) : "").ToImmutableArray();
+            tab.Roots.Select(r => r != null ? NoteStrs.Instance.ToStringNoteOctave(r.NoteEnum, r.Octave) : "·").ToImmutableArray();
         PrintStrings(rootStrs, rowsSbs);
         
         PrintFretRows(tab.Columns, rowsSbs);
@@ -85,7 +85,7 @@ public class TabPrinter
             var noteIdx = rootIdxes[i]+fretColumn[i];
             if (!noteIdx.HasValue)
             {
-                strs.Add("");
+                strs.Add("·");
             }
             else
             {
@@ -120,9 +120,9 @@ public class TabPrinter
         var rowsSbs = tab.Roots.Select(_ => new StringBuilder()).ToImmutableArray();
         
         var rootStrs =
-            tab.Roots.Select(r => r != null ? NoteStrs.Instance.ToStringNoteOctave(r.NoteEnum, r.Octave) : "").ToImmutableArray();
+            tab.Roots.Select(r => r != null ? NoteStrs.Instance.ToStringNoteOctave(r.NoteEnum, r.Octave) : "·").ToImmutableArray();
         PrintStrings(rootStrs, rowsSbs);
-        PrintStrings(Enumerable.Repeat(":", rowsSbs.Length).ToImmutableArray(), rowsSbs);
+        PrintStrings(Enumerable.Repeat(" ", rowsSbs.Length).ToImmutableArray(), rowsSbs);
         
         PrintFretColumns(tab.Roots, tab.Columns, rowsSbs);
 

@@ -8,7 +8,8 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="TabsNotesThings"
-        xmlns:views="clr-namespace:TabsNotesThings.Views">
+        xmlns:views="clr-namespace:TabsNotesThings.Views"
+        x:Name="Window">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -18,11 +19,36 @@
                           IsDesignTimeCreatable="True"/>-->
     </Design.DataContext>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Orientation="Vertical">
-            <views:TabView DataContext="{Binding TabViewModel}"></views:TabView>
-            <views:KeyboardView DataContext="{Binding KeyboardViewModel}"></views:KeyboardView>
-        </StackPanel>
-    </ScrollViewer>
+    <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <ScrollViewer BringIntoViewOnFocusChange="False" VerticalScrollBarVisibility="Auto" Margin="0 0 40 40">
+            <StackPanel Orientation="Vertical">
+                <views:TabView DataContext="{Binding TabViewModel}"></views:TabView>
+                <views:KeyboardView DataContext="{Binding KeyboardViewModel}"></views:KeyboardView>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <Slider x:Name="PositionSlider"
+                Minimum="0"
+                Maximum="{Binding #Window.Width}" VerticalAlignment="Bottom"/>
+        <Slider x:Name="PositionSliderVertical"
+                Orientation="Vertical"
+                Minimum="0"
+                Maximum="{Binding #Window.Height}" HorizontalAlignment="Right"/>
+        <Canvas Grid.Row="1">
+            <Border Width="1"
+                    Background="Red"
+                    Height="{Binding Bounds.Height, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Canvas.Left="{Binding #PositionSlider.Value}" />
+        </Canvas>
+        <Canvas Grid.Row="1">
+            <Border Height="1"
+                    Background="Red"
+                    Width="{Binding Bounds.Width, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Canvas.Bottom="{Binding #PositionSliderVertical.Value}" />
+        </Canvas>
+    </Panel>
+    
+    
+    
 
 </Window>

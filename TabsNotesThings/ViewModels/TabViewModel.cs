@@ -11,6 +11,16 @@ namespace TabsNotesThings.ViewModels;
 
 public partial class TabViewModel : ViewModelBase
 {
+    private readonly KeyboardViewModel _keyboardViewModel;
+    public TabViewModel()
+    {
+        _keyboardViewModel = KeyboardViewModel.Instance;
+    }
+    
+    public TabViewModel(KeyboardViewModel keyboardViewModel)
+    {
+        _keyboardViewModel = keyboardViewModel;
+    }
     public static TabViewModel Instance { get; } = new TabViewModel();
     
     [ObservableProperty]
@@ -24,13 +34,16 @@ public partial class TabViewModel : ViewModelBase
         B     0 0   0     
         F#6 2      4       
         B  2  5 5 4 5    
+        
+        C#    3 3 2 3          
+        G# 5                   
+        E2                   
+        B     0 0   0     
+        F#6 2      4       
+        B  2  5 5 4 5    
         """;
 
-    public TabViewModel()
-    {
-    }
-
-    private readonly KeyboardViewModel _keyboardViewModel = KeyboardViewModel.Instance;
+    
 
     public record Tab1(IReadOnlyList<int?> RootsFromA4Indexes, IReadOnlyList<IReadOnlyList<int?>> Columns);
     private void ToTab1(IReadOnlyList<NoteMayBeWithOctave?> rootNotes, IReadOnlyList<IReadOnlyList<int?>> columns)
