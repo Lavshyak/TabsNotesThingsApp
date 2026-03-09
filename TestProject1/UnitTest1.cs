@@ -1,94 +1,100 @@
 ﻿using TabsNotesThings.ViewModels;
+using TabsNotesThings.ViewModels.ReadOnlyModels;
+using static TabsNotesThings.ViewModels.Parsers.NoteOrFretParser;
 
 namespace TestProject1;
 
 public class UnitTest1
 {
-    public record TestData(string Input, TabParser.ParseNoteResult Expected);
-
-    private static object[] ToObjArr(string input, TabParser.ParseNoteResult parseNoteResult)
+    private static object[] ToObjArr1(int testId, string input, int startIdx,
+        ParseNoteOrFretResult parseNoteOrFretResult)
     {
-        return [input, parseNoteResult];
+        return [testId, input, startIdx, parseNoteOrFretResult];
     }
 
-    public static IEnumerable<object[]> TabParserParseNoteWorksTestData =>
-    [
-        ToObjArr("A", new(NoteEnum: NoteEnum.A, Octave: null, StartIdx: 0, Length: 1, IsError: false)),
-        ToObjArr(" A 2", new(NoteEnum: NoteEnum.A, Octave: null, StartIdx: 1, Length: 1, IsError: false)),
-        ToObjArr("A# G", new(NoteEnum: NoteEnum.ASharp, Octave: null, StartIdx: 0, Length: 2, IsError: false)),
-        ToObjArr(" F#4 6", new(NoteEnum: NoteEnum.FSharp, Octave: 4, StartIdx: 1, Length: 3, IsError: false)),
-        ToObjArr(" F#5 B", new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 1, Length: 3, IsError: false)),
-        ToObjArr(" f#5 B", new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 1, Length: 3, IsError: false)),
-        
-        ToObjArr(" 4 ", new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        
-        ToObjArr(" ", new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        ToObjArr("", new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true))
-    ];
-
-    [Theory]
-    [MemberData(nameof(TabParserParseNoteWorksTestData))]
-    public void TabParserParseNoteWorks(
-        string input,
-        TabParser.ParseNoteResult expected)
-    {
-        var parser = TabParser.Instance;
-
-        var result = parser.ParseNote(input);
-
-        Assert.Equal(expected.IsError, result.IsError);
-        Assert.Equal(expected.NoteEnum, result.NoteEnum);
-        Assert.Equal(expected.Octave, result.Octave);
-        Assert.Equal(expected.StartIdx, result.StartIdx);
-        Assert.Equal(expected.Length, result.Length);
-    }
-    
-    private static object[] ToObjArr1(string input, int startIdx, TabParser.ParseNoteResult parseNoteResult)
-    {
-        return [input, startIdx, parseNoteResult];
-    }
-    
     public static IEnumerable<object[]> TabParserParseNoteFromSpanWorksTestData =>
     [
-        ToObjArr1("A", 0, new(NoteEnum: NoteEnum.A, Octave: null, StartIdx: 0, Length: 1, IsError: false)),
-        ToObjArr1(" A 2", 0, new(NoteEnum: NoteEnum.A, Octave: null, StartIdx: 1, Length: 1, IsError: false)),
-        ToObjArr1("A# G", 0, new(NoteEnum: NoteEnum.ASharp, Octave: null, StartIdx: 0, Length: 2, IsError: false)),
-        ToObjArr1(" F#4 6", 0, new(NoteEnum: NoteEnum.FSharp, Octave: 4, StartIdx: 1, Length: 3, IsError: false)),
-        ToObjArr1(" F#5 B", 0, new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 1, Length: 3, IsError: false)),
-        
-        ToObjArr1(" f#5 B", 0, new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 1, Length: 3, IsError: false)),
-        
-        ToObjArr1(" 4 ", 0, new(NoteEnum: null, Octave: 4, StartIdx: 1, Length: null, IsError: false)),
-        ToObjArr1(" 5A ", 0, new(NoteEnum: null, Octave: 5, StartIdx: 1, Length: null, IsError: false)),
-        ToObjArr1(" 6 A ", 0, new(NoteEnum: null, Octave: 6, StartIdx: 1, Length: null, IsError: false)),
-        
-        ToObjArr1(" ", 0, new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        ToObjArr1("X", 0, new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        ToObjArr1("", 0, new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        ToObjArr1(" l A", 0, new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        
-        ToObjArr1("C F#5 B", 1, new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 1, Length: 3, IsError: false)),
-        ToObjArr1("C F#5 B", 2, new(NoteEnum: NoteEnum.FSharp, Octave: 5, StartIdx: 0, Length: 3, IsError: false)),
-        ToObjArr1("C F#5 B", 0, new(NoteEnum: NoteEnum.C, Octave: null, StartIdx: 0, Length: 1, IsError: false)),
-        ToObjArr1("C F#5 B", 3, new(NoteEnum: null, Octave: null, StartIdx: null, Length: null, IsError: true)),
-        ToObjArr1("C F#5 B", 5, new(NoteEnum: NoteEnum.B, Octave: null, StartIdx: 1, Length: 1, IsError: false)),
+        ToObjArr1(0, "A", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.A, octave: null, startIdx: 0, length: 1)),
+        ToObjArr1(1, " A", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.A, octave: null, startIdx: 1, length: 1)),
+        ToObjArr1(2, " A 2", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.A, octave: null, startIdx: 1, length: 1)),
+        ToObjArr1(3, "A# G", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.ASharp, octave: null, startIdx: 0, length: 2)),
+        ToObjArr1(4, " F#4 6", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.FSharp, octave: 4, startIdx: 1, length: 3)),
+        ToObjArr1(5, " F#5 B", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.FSharp, octave: 5, startIdx: 1, length: 3)),
+        ToObjArr1(6, " f#5 B", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.FSharp, octave: 5, startIdx: 1, length: 3)),
+        ToObjArr1(7, " 4 ", 0,
+            ParseNoteOrFretResult.FromFret(fret: 4, startIdx: 1, length: 1)),
+        ToObjArr1(8, " 5A ", 0,
+            ParseNoteOrFretResult.FromError()),
+        ToObjArr1(9, " 6 A ", 0,
+            ParseNoteOrFretResult.FromFret(fret: 6, startIdx: 1, length: 1)),
+        ToObjArr1(10, " ", 0,
+            ParseNoteOrFretResult.FromEmpty()),
+        ToObjArr1(11, "X", 0,
+            ParseNoteOrFretResult.FromError()),
+        ToObjArr1(12, "", 0,
+            ParseNoteOrFretResult.FromEmpty()),
+        ToObjArr1(13, " l A", 0,
+            ParseNoteOrFretResult.FromError()),
+        ToObjArr1(14, "C F#5 B", 1,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.FSharp, octave: 5, startIdx: 1, length: 3)),
+        ToObjArr1(15, "C F#5 B", 2,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.FSharp, octave: 5, startIdx: 0, length: 3)),
+        ToObjArr1(16, "C F#5 B", 0,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.C, octave: null, startIdx: 0, length: 1)),
+        ToObjArr1(17, "C F#5 B", 3,
+            ParseNoteOrFretResult.FromError()),
+        ToObjArr1(18, "C F#5 B", 5,
+            ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.B, octave: null, startIdx: 1, length: 1)),
     ];
-    
+
+    [Fact]
+    public void Hui()
+    {
+        var kvm = new KeyboardViewModel();
+        
+        kvm.HandleInputCommand.Execute(new TabViewModel.Tab2([
+                    new NoteMayBeWithOctave(NoteEnum.FSharp, 2), null, new NoteMayBeWithOctave(NoteEnum.B, null)
+                ],
+                [
+                    [18, null, null],
+                    [5, null, 5],
+                    [null, null, 13]
+                ]
+            )
+        );
+    }
+    [Fact]
+    public void Hui1()
+    {
+        var obj = new NotesCollectionContainer(new NoteWithOctave(NoteEnum.C, 4), new NoteWithOctave(NoteEnum.B, 4));
+    }
+
     [Theory]
     [MemberData(nameof(TabParserParseNoteFromSpanWorksTestData))]
     public void TabParserParseNoteFromSpanWorks(
+        int testId,
         string input,
         int startIdx,
-        TabParser.ParseNoteResult expected)
+        ParseNoteOrFretResult expected)
     {
-        var parser = TabParser.Instance;
+        var parser = Instance;
 
-        var result = parser.ParseNote(input.AsSpan(startIdx));
+        var result = parser.ParseNextNoteOrFret(input.AsSpan(startIdx));
 
-        Assert.Equal(expected.IsError, result.IsError);
+
         Assert.Equal(expected.NoteEnum, result.NoteEnum);
         Assert.Equal(expected.Octave, result.Octave);
+        Assert.Equal(expected.Fret, result.Fret);
         Assert.Equal(expected.StartIdx, result.StartIdx);
         Assert.Equal(expected.Length, result.Length);
+        Assert.Equal(expected.IsError, result.IsError);
+        Assert.Equal(expected.IsEmpty, result.IsEmpty);
     }
 }

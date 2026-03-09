@@ -7,7 +7,8 @@
         x:Class="TabsNotesThings.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="TabsNotesThings">
+        Title="TabsNotesThings"
+        xmlns:views="clr-namespace:TabsNotesThings.Views">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -17,77 +18,11 @@
                           IsDesignTimeCreatable="True"/>-->
     </Design.DataContext>
 
-
-    <StackPanel Orientation="Vertical">
-        <TextBox Text="{Binding InputFieldText}" AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="Consolas"
-                 BorderBrush="{Binding InputBorderBrush}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                 ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        </TextBox>
-
-        <Button Content="import" Command="{Binding ImportCommand}">
-        </Button>
-
-        <ItemsControl ItemsSource="{Binding NoteRowTexts}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBox Text="{Binding RootNoteText.Text }" Width="40" MinWidth="10" IsReadOnly="False"
-                                 Margin="0 0 6 1"
-                                 Padding="5 0 0 0"
-                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center" />
-                        <ItemsControl ItemsSource="{Binding NoteTexts}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBox Text="{Binding Text}" Width="20" MinWidth="10"
-                                             TextWrapping="WrapWithOverflow" IsReadOnly="False" Padding="0"
-                                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                             BorderThickness="1" BorderBrush="LightGray" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <Button Content="Import"></Button>
-
-
-        <!--<ItemsControl ItemsSource="{Binding NoteRows}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBox Text="{Binding RootNote.KeyOctaveString }"
-                                 Width="40"
-                                 IsReadOnly="True" />
-                        <ItemsControl ItemsSource="{Binding Notes}">
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBox Text="{Binding KeyOctaveString}"
-                                             Width="40"
-                                             IsReadOnly="True" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>-->
-
-
-    </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Orientation="Vertical">
+            <views:TabView DataContext="{Binding TabViewModel}"></views:TabView>
+            <views:KeyboardView DataContext="{Binding KeyboardViewModel}"></views:KeyboardView>
+        </StackPanel>
+    </ScrollViewer>
 
 </Window>

@@ -1,0 +1,41 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:TabsNotesThings.ViewModels"
+             x:DataType="viewModels:KeyboardViewModel"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="TabsNotesThings.Views.KeyboardView">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <viewModels:KeyboardViewModel />
+
+        <!--<d:DesignInstance Type="viewModels:KeyboardViewModel"
+                          IsDesignTimeCreatable="True" />-->
+    </Design.DataContext>
+    <StackPanel>
+        
+        <StackPanel Orientation="Horizontal">
+            <ItemsControl ItemsSource="{Binding SelectedHalfToneIdxAndNoteStrs}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ComboBox ItemsSource="{Binding Variants}" 
+                                  SelectedIndex="{Binding SelectedIndex}"
+                                  IsEnabled="{Binding IsEnabled}"
+                                  Width="100"
+                                  >
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Content="{Binding NoteStr}"></Label>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox Text="{Binding View}" FontFamily="Consolas" FontSize="16" LineHeight="35" Margin="0 0 0 0" Padding="8 0 0 0 "></TextBox>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

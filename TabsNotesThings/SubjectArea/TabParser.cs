@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using TabsNotesThings.ViewModels.Parsers;
+using TabsNotesThings.ViewModels.ReadOnlyModels;
 
 namespace TabsNotesThings.ViewModels;
 
@@ -21,10 +25,43 @@ public enum NoteEnum
     B
 }
 
+public class NoteEnumArr
+{
+    public static NoteEnumArr Instance { get; } = new();
+
+    public IReadOnlyList<NoteEnum> Values { get; } =
+    [
+        NoteEnum.C, NoteEnum.CSharp,
+        NoteEnum.D, NoteEnum.DSharp,
+        NoteEnum.E,
+        NoteEnum.F, NoteEnum.FSharp,
+        NoteEnum.G, NoteEnum.GSharp,
+        NoteEnum.A, NoteEnum.ASharp,
+        NoteEnum.B
+    ];
+
+    public IReadOnlyDictionary<NoteEnum, int> NoteEnumToIdxDict { get; }
+    public IReadOnlyDictionary<NoteEnum, int> NoteEnumToOffsetFromADict { get; }
+    public IReadOnlyDictionary<int, NoteEnum> NoteOffsetToNoteEnumDict { get; }
+    public NoteEnumArr()
+    {
+        NoteEnumToIdxDict = Values.Select(KeyValuePair.Create).ToFrozenDictionary();
+        var aIdx = NoteEnumToIdxDict[NoteEnum.A];
+        NoteEnumToOffsetFromADict = Values.Select(noteEnum =>
+        {
+            var noteIdx = NoteEnumToIdxDict[noteEnum];
+            var offset = noteIdx - aIdx;
+            return KeyValuePair.Create(noteEnum, offset);
+        }).ToFrozenDictionary();
+        NoteOffsetToNoteEnumDict = NoteEnumToOffsetFromADict.Select(kvp => KeyValuePair.Create(kvp.Value, kvp.Key))
+            .ToFrozenDictionary();
+    }
+}
+
 public class NoteNames
 {
     public static NoteNames Instance { get; } = new NoteNames();
-    
+
     public string C { get; } = "C";
     public string CSharp { get; } = "C#";
     public string D { get; } = "D";
@@ -41,8 +78,8 @@ public class NoteNames
 
 public class NotesEnumToStrings
 {
-    public static NotesEnumToStrings Instance { get; } = new(); 
-    
+    public static NotesEnumToStrings Instance { get; } = new();
+
     public IReadOnlyDictionary<string, NoteEnum> NoteNameToNoteEnumDict { get; }
     public IReadOnlyDictionary<string, NoteEnum> LowerNoteNameToNoteEnumDict { get; }
     public IReadOnlyDictionary<NoteEnum, string> NoteEnumToNoteNameDict { get; }
@@ -86,196 +123,131 @@ public class NotesEnumToStrings
 
 public class TabParser
 {
-    public static TabParser Instance { get; } = new(); 
+    public static TabParser Instance { get; } = new();
     
-    public record ParseNoteResult(NoteEnum? NoteEnum, int? Octave, int? StartIdx, int? Length, bool IsError);
+ 
+    public record ReadedNextColumnValue(int Value, int StartIdx, int Length);
 
-    public ParseNoteResult ParseNote(string noteStringFromTab)
-    {
-        if (string.IsNullOrWhiteSpace(noteStringFromTab))
-            return new(null, null, null, null, true);
-
-        var s = noteStringFromTab;
-        int i = 0;
-
-        while (i < s.Length && s[i] == ' ')
-            i++;
-
-        if (i >= s.Length)
-            return new(null, null, null, null, true);
-
-        int start = i;
-
-        char c = s[i];
-        if (!char.IsLetter(c))
-            return new(null, null, null, null, true);
-
-        c = char.ToLowerInvariant(c);
-        if (c < 'a' || c > 'g')
-            return new(null, null, null, null, true);
-
-        i++;
-
-        // optional #
-        if (i < s.Length && s[i] == '#')
-            i++;
-
-        var noteName = s.Substring(start, i - start);
-
-        if (!NotesEnumToStrings.Instance.LowerNoteNameToNoteEnumDict
-                .TryGetValue(noteName.ToLowerInvariant(), out var noteEnum))
-            return new(null, null, null, null, true);
-
-        int? octave = null;
-
-        if (i < s.Length && char.IsDigit(s[i]))
-        {
-            octave = s[i] - '0';
-            i++;
-        }
-
-        int length = i - start;
-
-        return new(noteEnum, octave, start, length, false);
-    }
-
-    public ParseNoteResult ParseNote(ReadOnlySpan<char> span)
-    {
-        if (span.IsEmpty)
-            return new(null, null, null, null, true);
-
-        int i = 0;
-
-        // skip spaces
-        while (i < span.Length && span[i] == ' ')
-            i++;
-
-        if (i >= span.Length)
-            return new(null, null, null, null, true);
-
-        int start = i;
-        char c = span[i];
-
-        // Case 1: digit -> octave only
-        if (char.IsDigit(c))
-        {
-            int octave = c - '0';
-            return new(null, octave, start, null, false);
-        }
-
-        // Case 2: note
-        if (!char.IsLetter(c))
-            return new(null, null, null, null, true);
-
-        char lc = char.ToLowerInvariant(c);
-        if (lc < 'a' || lc > 'g')
-            return new(null, null, null, null, true);
-
-        i++;
-
-        // optional #
-        if (i < span.Length && span[i] == '#')
-            i++;
-
-        var noteName = span.Slice(start, i - start).ToString();
-
-        if (!NotesEnumToStrings.Instance.LowerNoteNameToNoteEnumDict
-                .TryGetValue(noteName.ToLowerInvariant(), out var noteEnum))
-            return new(null, null, null, null, true);
-
-        int? octaveOpt = null;
-
-        // optional octave digit
-        if (i < span.Length && char.IsDigit(span[i]))
-        {
-            octaveOpt = span[i] - '0';
-            i++;
-        }
-
-        int length = i - start;
-        return new(noteEnum, octaveOpt, start, length, false);
-    }
     
-    public void FromTabString(string tab,
-        out List<string> rowRootKeys,
-        out List<List<int?>> rows)
-    {
-        rowRootKeys = [];
-        rows = [];
 
-        var strRows = tab.Split("\n\r".ToCharArray()).Select(r => r.Trim()).Where(r => !string.IsNullOrWhiteSpace(r))
-            .ToArray();
-        var maxLen = strRows.Max(r => r.Length);
-        for (int i = 0; i < strRows.Length; i++)
+    
+
+    public record FromTabStringResult
+    {
+        public IReadOnlyList<NoteMayBeWithOctave?>? RootNotes { get; private init; } = null;
+        public IReadOnlyList<int?[]>? Columns { get; private init; } = null;
+        [MemberNotNullWhen(false, nameof(RootNotes), nameof(Columns))]
+        public bool IsError { get; private init; }
+
+        public FromTabStringResult(bool isError)
         {
-            strRows[i] = strRows[i].PadRight(maxLen, ' ');
+            IsError = isError;
         }
 
-        int columnCount = strRows.First().Length;
-        int rowsCount = strRows.Length;
-        rows.AddRange(Enumerable.Range(0, rowsCount).Select(_ => new List<int?>(1000)));
-        //rowRootKeys.AddRange(Enumerable.Range(0, rowsCount).Select(_ => (string?)null)!);
-        bool keysParsed = false;
-
-        string parseArea(int columnIdx, int row)
+        public static FromTabStringResult FromError()
         {
-            var nextSpaceIdx = strRows[row].IndexOf(' ', columnIdx);
-            if (nextSpaceIdx == -1)
+            return  new FromTabStringResult(true);
+        }
+        
+        public static FromTabStringResult FromResult(IReadOnlyList<NoteMayBeWithOctave?> rootNotes, IReadOnlyList<int?[]> columns)
+        {
+            return new FromTabStringResult(false)
             {
-                return strRows[row].Substring(columnIdx);
+                RootNotes = rootNotes,
+                Columns = columns
+            };
+        }
+    }
+
+    private readonly TabRowParser _tabRowParser = TabRowParser.Instance;
+
+    public FromTabStringResult FromTabString(string tab)
+    {
+        var rows = tab.Split('\n').ToImmutableArray();
+
+        var rowsParseResults = rows.Select(r => _tabRowParser.ParseTabRow(r)).ToImmutableArray();
+
+        if (rowsParseResults.Any(rpr => rpr.IsError))
+        {
+            return FromTabStringResult.FromError();
+        }
+
+        List<NoteMayBeWithOctave?> rootNotes = new();
+        
+        for (int i = 0; i < rows.Length; i++)
+        {
+            var rowParseResult = rowsParseResults[i];
+            if (rowParseResult.IsError)
+            {
+                return FromTabStringResult.FromError();
+            }
+            if (rowParseResult.IsEmpty.Value)
+            {
+                rootNotes.Add(null);
+            }
+            else if(rowParseResult.IsValid)
+            {
+                rootNotes.Add(rowParseResult.RootInTabRow.NoteMayBeWithOctave);
             }
             else
             {
-                return strRows[row].Substring(columnIdx, nextSpaceIdx - columnIdx);
+                throw new InvalidOperationException();
             }
         }
-
-        for (int columnIdx = 0; columnIdx < columnCount;)
+        
+        int[] nextFretIndexes = rowsParseResults.Select(_ => 0).ToArray();
+        int?[] startShouldBeNotLess = rowsParseResults.Select(r => r.RootInTabRow == null ? (int?) null : r.RootInTabRow.StartIdx+r.RootInTabRow.Length).ToArray();
+        List<int?[]> columns = new();
+        
+        while (true)
         {
-            int columnIdxIncrease = 1;
-            bool willKeysBeParsed = false;
-            for (int rowIdx = 0; rowIdx < rowsCount; rowIdx++)
+            var minStartIdx = int.MaxValue;
+            for (int i = 0; i < rows.Length; i++)
             {
-                if (strRows[rowIdx][columnIdx] == ' ')
+                var fretInfo = rowsParseResults[i].TryGetFret(nextFretIndexes[i]);
+                if(fretInfo == null)
+                    continue;
+                
+                if (fretInfo.StartIdx < minStartIdx)
+                {
+                    minStartIdx = fretInfo.StartIdx;
+                }
+            }
+
+            if (startShouldBeNotLess.Where(x => x.HasValue).Any(x => minStartIdx < x))
+            {
+                return FromTabStringResult.FromError();
+            }
+
+            if (minStartIdx == int.MaxValue)
+            {
+                break;
+            }
+            
+            int?[] column = new int?[rowsParseResults.Length];
+            for (int i = 0; i < rows.Length; i++)
+            {
+                var fretInfo = rowsParseResults[i].TryGetFret(nextFretIndexes[i]);
+                if (fretInfo == null)
+                    continue;
+
+                if (fretInfo.StartIdx != minStartIdx)
                 {
                     continue;
                 }
-                else
-                {
-                    var parsedAreaStr = parseArea(columnIdx, rowIdx);
-                    columnIdxIncrease = Math.Max(columnIdxIncrease, parsedAreaStr.Length);
-                    if (!keysParsed)
-                    {
-                        rowRootKeys.Add(parsedAreaStr);
-                        willKeysBeParsed = true;
-                    }
-                    else
-                    {
-                        var parsedFretNumber = int.Parse(parsedAreaStr);
-                        rows[rowIdx].Add(parsedFretNumber);
-                    }
-                }
+                
+                column[i] = fretInfo.Fret;
+                nextFretIndexes[i] += 1;
+                startShouldBeNotLess[i] = fretInfo.StartIdx + fretInfo.Length;
             }
-
-            var len = rows.Max(r => r.Count);
-            foreach (var row in rows)
-            {
-                while (row.Count < len)
-                {
-                    row.Add(null);
-                }
-            }
-
-            if (willKeysBeParsed)
-            {
-                keysParsed = true;
-            }
-
-            columnIdx += columnIdxIncrease;
+            
+            columns.Add(column);
         }
+
+        return FromTabStringResult.FromResult(rootNotes, columns);
     }
 
-    public IReadOnlyList<NoteRow> FromTabStringToNoteRows(string tab)
+    /*public IReadOnlyList<NoteRow> FromTabStringToNoteRows(string tab)
     {
         FromTabString(tab, out var rowRootKeys, out var rows);
         var rowRootNotes = rowRootKeys.Select(rrk => Note.AllNotes.First(n => n.Key == rrk && n.Octave == 4)).ToArray();
@@ -288,5 +260,5 @@ public class TabParser
             )
         );
         return rs.ToArray();
-    }
+    }*/
 }
