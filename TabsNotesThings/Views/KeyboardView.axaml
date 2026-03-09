@@ -15,6 +15,9 @@
         <!--<d:DesignInstance Type="viewModels:KeyboardViewModel"
                           IsDesignTimeCreatable="True" />-->
     </Design.DataContext>
+    
+    
+    
     <StackPanel>
 
         <StackPanel Orientation="Horizontal">
@@ -38,12 +41,18 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            
             <TextBox Text="{Binding View}" 
                      FontFamily="Consolas" 
                      FontSize="16" 
                      LineHeight="24" 
                      Margin="0 0 0 0"
                      Padding="8 0 0 0 ">
+                <TextBox.Styles>
+                    <Style Selector="TextBox /template/ TextPresenter">
+                        <Setter Property="Margin" Value="0,0,0,10"/>
+                    </Style>
+                </TextBox.Styles>
             </TextBox>
         </StackPanel>
     </StackPanel>

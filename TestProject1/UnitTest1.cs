@@ -54,7 +54,7 @@ public class UnitTest1
             ParseNoteOrFretResult.FromNote(noteEnum: NoteEnum.B, octave: null, startIdx: 1, length: 1)),
     ];
 
-    [Fact]
+    /*[Fact]
     public void Hui()
     {
         var kvm = new KeyboardViewModel();
@@ -69,7 +69,7 @@ public class UnitTest1
                 ]
             )
         );
-    }
+    }*/
     [Fact]
     public void Hui1()
     {

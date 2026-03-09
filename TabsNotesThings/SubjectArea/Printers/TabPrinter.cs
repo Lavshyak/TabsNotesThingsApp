@@ -12,11 +12,25 @@ public class TabPrinter
 {
     public static TabPrinter Instance { get; } = new();
 
-    public void PrintFretRows(IReadOnlyList<IReadOnlyList<int?>> rows, IReadOnlyList<StringBuilder> rowsSbs)
+    public void PrintFretRows(IReadOnlyList<IReadOnlyList<TabParser.FretNumberOrSpecialSymbol>> rows, IReadOnlyList<StringBuilder> rowsSbs)
     {
         foreach (var row in rows)
         {
-            string[] strs = row.Select(x => x.HasValue ? x.Value.ToString() : "·").ToArray();
+            string[] strs = row.Select(x =>
+            {
+                if (x.FretNumber != null)
+                {
+                    return x.FretNumber.Value.ToString();
+                }
+                else if (x.SpecialSymbol.HasValue)
+                {
+                    return x.SpecialSymbol.Value.ToString();
+                }
+                else
+                {
+                    return "·";
+                }
+            }).ToArray();
             var maxLen = strs.Max(s => s.Length);
             for (int i = 0; i < strs.Length; i++)
             {
@@ -25,7 +39,7 @@ public class TabPrinter
         }
     }
 
-    public IReadOnlyList<string> PrintFretRows(IReadOnlyList<IReadOnlyList<int?>> rows)
+    public IReadOnlyList<string> PrintFretRows(IReadOnlyList<IReadOnlyList<TabParser.FretNumberOrSpecialSymbol>> rows)
     {
         var rowsSbs = rows.Select(_ => new StringBuilder()).ToArray();
 
@@ -77,28 +91,41 @@ public class TabPrinter
         return result;
     }
 
-    public void PrintFretColumnToNoteColumn(IReadOnlyList<int?> rootIdxes, IReadOnlyList<int?> fretColumn, IReadOnlyList<StringBuilder> rowsSbs)
+    public void PrintFretColumnToNoteColumn(IReadOnlyList<int?> rootIdxes, IReadOnlyList<TabParser.FretNumberOrSpecialSymbol> fretColumn, IReadOnlyList<StringBuilder> rowsSbs)
     {
         List<string> strs = [];
         for (int i = 0; i < rootIdxes.Count; i++)
         {
-            var noteIdx = rootIdxes[i]+fretColumn[i];
-            if (!noteIdx.HasValue)
+            var rootIdx = rootIdxes[i];
+            if (!rootIdx.HasValue)
             {
                 strs.Add("·");
             }
             else
             {
-                var noteAndOctave = NoteStrs.Instance.ToNoteAndOctave(noteIdx.Value);
-                var str = NoteStrs.Instance.ToStringNoteOctave(noteAndOctave.note, noteAndOctave.octave);
-                strs.Add(str);
+                var fret = fretColumn[i];
+                if (fret.SpecialSymbol.HasValue)
+                {
+                    strs.Add(fret.SpecialSymbol.Value.ToString());
+                }
+                else if (fret.FretNumber.HasValue)
+                {
+                    var noteIdx = rootIdxes[i].Value+fretColumn[i].FretNumber.Value;
+                    var noteAndOctave = NoteStrs.Instance.ToNoteAndOctave(noteIdx);
+                    var str = NoteStrs.Instance.ToStringNoteOctave(noteAndOctave.note, noteAndOctave.octave);
+                    strs.Add(str);
+                }
+                else
+                {
+                    strs.Add("·");
+                }
             }
         }
 
         PrintStrings(strs, rowsSbs);
     }
 
-    public void PrintFretColumns(IReadOnlyList<int?> rootIdxes, IReadOnlyList<IReadOnlyList<int?>> fretColumns, IReadOnlyList<StringBuilder> rowsSbs)
+    public void PrintFretColumns(IReadOnlyList<int?> rootIdxes, IReadOnlyList<IReadOnlyList<TabParser.FretNumberOrSpecialSymbol>> fretColumns, IReadOnlyList<StringBuilder> rowsSbs)
     {
         foreach (var column in fretColumns)
         {
@@ -106,7 +133,7 @@ public class TabPrinter
         }
     }
     
-    public void PrintFretColumns(IReadOnlyList<NoteWithOctave?> roots, IReadOnlyList<IReadOnlyList<int?>> fretColumns, IReadOnlyList<StringBuilder> rowsSbs)
+    public void PrintFretColumns(IReadOnlyList<NoteWithOctave?> roots, IReadOnlyList<IReadOnlyList<TabParser.FretNumberOrSpecialSymbol>> fretColumns, IReadOnlyList<StringBuilder> rowsSbs)
     {
         var rootIdxes = roots.Select(r => r != null ? NoteStrs.Instance.ToHalfToneIdxRelativeToA4(r) : (int?)null).ToImmutableArray();
         foreach (var column in fretColumns)

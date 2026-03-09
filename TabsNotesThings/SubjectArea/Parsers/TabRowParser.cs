@@ -11,7 +11,7 @@ public class TabRowParser
     
     private NoteOrFretParser _noteOrFretParser = NoteOrFretParser.Instance;
     
-    public record FretInTabRow(int StartIdx, int Length, int Fret);
+    public record FretInTabRow(int StartIdx, int Length, int? Fret, char? SpecialSymbol = null);
 
     public record RootInTabRow(int StartIdx, int Length, NoteMayBeWithOctave? NoteMayBeWithOctave);
     
@@ -118,8 +118,20 @@ public class TabRowParser
             {
                 break;
             }
+
+            if (noteParseResult.IsValidFret)
+            {
+                fretsInTabRow.Add(new FretInTabRow(nextStartIdx+noteParseResult.StartIdx.Value, noteParseResult.Length.Value, noteParseResult.Fret.Value, null));
+            }
+            else if(noteParseResult.SpecialSymbol.HasValue)
+            {
+                fretsInTabRow.Add(new FretInTabRow(nextStartIdx+noteParseResult.StartIdx.Value, noteParseResult.Length.Value, null, noteParseResult.SpecialSymbol));
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
             
-            fretsInTabRow.Add(new FretInTabRow(nextStartIdx+noteParseResult.StartIdx.Value, noteParseResult.Length.Value, noteParseResult.Fret.Value));
             nextStartIdx = nextStartIdx + noteParseResult.StartIdx.Value + noteParseResult.Length.Value;
         }
 

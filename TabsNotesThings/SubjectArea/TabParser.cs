@@ -135,7 +135,7 @@ public class TabParser
     public record FromTabStringResult
     {
         public IReadOnlyList<NoteMayBeWithOctave?>? RootNotes { get; private init; } = null;
-        public IReadOnlyList<int?[]>? Columns { get; private init; } = null;
+        public IReadOnlyList<FretNumberOrSpecialSymbol[]>? Columns { get; private init; } = null;
         [MemberNotNullWhen(false, nameof(RootNotes), nameof(Columns))]
         public bool IsError { get; private init; }
 
@@ -149,7 +149,7 @@ public class TabParser
             return  new FromTabStringResult(true);
         }
         
-        public static FromTabStringResult FromResult(IReadOnlyList<NoteMayBeWithOctave?> rootNotes, IReadOnlyList<int?[]> columns)
+        public static FromTabStringResult FromResult(IReadOnlyList<NoteMayBeWithOctave?> rootNotes, IReadOnlyList<FretNumberOrSpecialSymbol[]> columns)
         {
             return new FromTabStringResult(false)
             {
@@ -197,7 +197,7 @@ public class TabParser
         
         int[] nextFretIndexes = rowsParseResults.Select(_ => 0).ToArray();
         int?[] startShouldBeNotLess = rowsParseResults.Select(r => r.RootInTabRow == null ? (int?) null : r.RootInTabRow.StartIdx+r.RootInTabRow.Length).ToArray();
-        List<int?[]> columns = new();
+        List<FretNumberOrSpecialSymbol[]> columns = new();
         
         while (true)
         {
@@ -224,7 +224,7 @@ public class TabParser
                 break;
             }
             
-            int?[] column = new int?[rowsParseResults.Length];
+            FretNumberOrSpecialSymbol[] column = new FretNumberOrSpecialSymbol[rowsParseResults.Length];
             for (int i = 0; i < rows.Length; i++)
             {
                 var fretInfo = rowsParseResults[i].TryGetFret(nextFretIndexes[i]);
@@ -235,8 +235,10 @@ public class TabParser
                 {
                     continue;
                 }
+
                 
-                column[i] = fretInfo.Fret;
+
+                column[i] = new FretNumberOrSpecialSymbol(fretInfo.Fret, fretInfo.SpecialSymbol);
                 nextFretIndexes[i] += 1;
                 startShouldBeNotLess[i] = fretInfo.StartIdx + fretInfo.Length;
             }
@@ -246,6 +248,8 @@ public class TabParser
 
         return FromTabStringResult.FromResult(rootNotes, columns);
     }
+
+    public record struct FretNumberOrSpecialSymbol(int? FretNumber, char? SpecialSymbol = null);
 
     /*public IReadOnlyList<NoteRow> FromTabStringToNoteRows(string tab)
     {

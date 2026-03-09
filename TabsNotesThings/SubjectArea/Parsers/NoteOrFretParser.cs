@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace TabsNotesThings.ViewModels.Parsers;
 
 public class NoteOrFretParser
 {
     public static NoteOrFretParser Instance { get; } = new();
-    
+
     public class ParseNoteOrFretResult
     {
         public NoteEnum? NoteEnum { get; private init; } = null;
@@ -14,27 +17,45 @@ public class NoteOrFretParser
         public int? Fret { get; private init; } = null;
         public int? StartIdx { get; private init; } = null;
         public int? Length { get; private init; } = null;
+
         [MemberNotNullWhen(false, nameof(StartIdx), nameof(Length))]
         public bool? IsEmpty { get; private init; } = null;
+
         [MemberNotNullWhen(false, nameof(IsEmpty))]
         public bool IsError { get; private init; }
+
         [MemberNotNullWhen(true, nameof(NoteEnum), nameof(StartIdx), nameof(Length))]
         public bool IsValidNote { get; private init; } = false;
+
         [MemberNotNullWhen(true, nameof(Fret), nameof(StartIdx), nameof(Length))]
         public bool IsValidFret { get; private init; } = false;
+        
+        [MemberNotNullWhen(true, nameof(StartIdx), nameof(Length))]
+        public char? SpecialSymbol { get; private init; } = null;
 
         private ParseNoteOrFretResult(bool isError)
         {
             IsError = isError;
         }
-        
+
+        public static ParseNoteOrFretResult FromSpecialSymbol(int startIdx, char specialSymbol)
+        {
+            return new ParseNoteOrFretResult(false)
+            {
+                StartIdx = startIdx,
+                Length = 1,
+                IsEmpty = false,
+                SpecialSymbol = specialSymbol
+            };
+        }
+
         public static ParseNoteOrFretResult FromFret(int fret, int startIdx, int length)
         {
             if (fret < 0 || startIdx < 0 || length < 0)
             {
                 throw new ArgumentException();
             }
-            
+
             return new ParseNoteOrFretResult(false)
             {
                 Fret = fret,
@@ -44,14 +65,14 @@ public class NoteOrFretParser
                 IsValidFret = true
             };
         }
-        
+
         public static ParseNoteOrFretResult FromNote(NoteEnum noteEnum, int? octave, int startIdx, int length)
         {
             if (startIdx < 0 || length < 0)
             {
                 throw new ArgumentException();
             }
-            
+
             return new ParseNoteOrFretResult(false)
             {
                 NoteEnum = noteEnum,
@@ -62,7 +83,7 @@ public class NoteOrFretParser
                 IsValidNote = true
             };
         }
-        
+
         public static ParseNoteOrFretResult FromError()
         {
             return new ParseNoteOrFretResult(true);
@@ -70,13 +91,13 @@ public class NoteOrFretParser
 
         public static ParseNoteOrFretResult FromEmpty()
         {
-            return new  ParseNoteOrFretResult(false)
+            return new ParseNoteOrFretResult(false)
             {
                 IsEmpty = true
             };
         }
     }
-    
+
     public ParseNoteOrFretResult ParseNextNoteOrFret(string noteStringFromTab)
     {
         return ParseNextNoteOrFret(noteStringFromTab.AsSpan());
@@ -87,8 +108,8 @@ public class NoteOrFretParser
         return ParseNextNoteOrFret(noteStringFromTab.AsSpan(startIdx));
     }
 
-    private readonly FretParser _fretParser = FretParser.Instance; 
-    
+    private readonly FretParser _fretParser = FretParser.Instance;
+
     public ParseNoteOrFretResult ParseNextNoteOrFret(ReadOnlySpan<char> span)
     {
         if (span.IsEmpty)
@@ -105,6 +126,19 @@ public class NoteOrFretParser
 
         int start = i;
         char c = span[i];
+
+        if (SpecialSymbols.Instance.Symbols.Contains(c))
+        {
+            i += 1;
+            if ((span.Length > i && char.IsWhiteSpace(span[i])) || span.Length == i)
+            {
+                return ParseNoteOrFretResult.FromSpecialSymbol(start, c);
+            }
+            else
+            {
+                return ParseNoteOrFretResult.FromError();
+            }
+        }
 
         // Case 1: digit -> fret only
         if (char.IsDigit(c))
@@ -163,6 +197,6 @@ public class NoteOrFretParser
         }
 
         int length = i - start;
-        return ParseNoteOrFretResult.FromNote(noteEnum, octaveOpt,start, length);
+        return ParseNoteOrFretResult.FromNote(noteEnum, octaveOpt, start, length);
     }
 }

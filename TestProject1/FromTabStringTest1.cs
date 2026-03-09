@@ -191,7 +191,7 @@ public class FromTabStringTest1
                     Assert.All(c, (v, iV) =>
                     {
                         var expectedV = expectedColumn[iV];
-                        Assert.Equal(v, expectedV);
+                        Assert.Equal(expectedV, v.FretNumber);
                     });
                 }
             );
