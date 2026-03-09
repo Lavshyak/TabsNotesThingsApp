@@ -1,3 +1,3 @@
 ﻿йоу
 
-![img.png](img.png)
+<img alt="img.png" src="img.png"/>
