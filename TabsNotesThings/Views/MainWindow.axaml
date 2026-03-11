@@ -20,7 +20,7 @@
     </Design.DataContext>
 
     <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <ScrollViewer BringIntoViewOnFocusChange="False" VerticalScrollBarVisibility="Auto" Margin="0 0 40 40">
+        <ScrollViewer BringIntoViewOnFocusChange="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0 0 40 40">
             <StackPanel Orientation="Vertical">
                 <views:TabView DataContext="{Binding TabViewModel}"></views:TabView>
                 <views:KeyboardView DataContext="{Binding KeyboardViewModel}"></views:KeyboardView>

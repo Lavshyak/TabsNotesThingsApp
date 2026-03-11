@@ -32,28 +32,29 @@ public partial class TabViewModel : ViewModelBase
 
     private const string Tab =
         """
-        C#     3 3 2 3          
-        G#  5                   
-        E2                    
-        B      0 0   0     
-        F#6 2      4       
-        B   2  5 5 4 5    
-
-        C#    3 3 2 3          
-        G#  5                   
-        E2                   
-        B      0 0   0     
-        F#6 2      4       
-        B   2  5 5 4 5    
+        C# |   ,  3 , | 3 , 2 3 | , 5 , 3 | ~ 2 0 ~ | 3 , 7 , | 7 , 5 5 |                                                                
+        G# | 5 ,    , |   ,   . | ,   ,   |         |   ,   , |   ,     |                                             
+        E  |   ,    , |   ,   . | ,   ,   |         |   ,   , |   ,     |                                      
+        B  |   ,  0 , | 0 ,   0 | ,   ,   |         | 0 ,   , |   ,     |                                   
+        F# | 2 ,    , |   , 4 . | , 7 , 5 | ~ 4 2 ~ |   , 9 , | 9 , 7 7 |                                      
+        B  | 2 ,  5 , | 5 , 4 5 | , 7 , 5 | ~ 4 2 ~ | 5 , 9 , | 9 , 7 7 |                                       
+        
+        C# | , 8  , 7 | ~ 5 3 ~ | 0 , 3 , | 7 , 5 5 | , 5 , 3 | ~ 2 3 ~ |                                   
+        G# | ,    ,   |         |   ,   , |   ,     | ,   ,   |         |                          
+        E  | , 0  ,   |         |   ,   , |   ,     | ,   ,   |         |                                  
+        B  | ,    ,   |         |   , 0 , |   ,     | ,   ,   |         |                         
+        F# | ,    , 9 | ~ 7 5 ~ | 2 ,   , | 9 , 7 7 | , 7 , 5 | ~ 2 0 ~ |                                               
+        B  | , 10 , 9 | ~ 7 5 ~ | 2 , 5 , | 9 , 7 7 | , 7 , 5 | ~ 2 0 ~ |                               
         """;
 
     private string _previousText = Tab;
 
     partial void OnTablatureInputTextChanged(string value)
     {
-        HandleSymbol(value, _previousText, SpecialSymbols.Instance.Pause);
-        HandleSymbol(value, _previousText, SpecialSymbols.Instance.SquareEnd);
-        HandleSymbol(value, _previousText, SpecialSymbols.Instance.Ligature);
+        foreach (var symbol in SpecialSymbols.Instance.SymbolsForStretchByColumn)
+        {
+            HandleSymbol(value, _previousText, symbol);
+        }
         _previousText = value;
     }
 
@@ -99,7 +100,14 @@ public partial class TabViewModel : ViewModelBase
                 {
                     if (i == lineIndex)
                     {
-                        isVisited = true;
+                        if (string.IsNullOrWhiteSpace(lines[i].Remove(column, 1)))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            isVisited = true;
+                        }
                     }
 
                     if (string.IsNullOrWhiteSpace(lines[i]))
@@ -177,7 +185,7 @@ public partial class TabViewModel : ViewModelBase
             }
             else if (diffTypeEnum == DiffTypeEnum.Removed)
             {
-                if (previousText[diffIndex] != '\'')
+                if (previousText[diffIndex] != symbol)
                     return;
 
                 // удалить \' везде
@@ -185,10 +193,56 @@ public partial class TabViewModel : ViewModelBase
                 var lines = currentText.Split('\n');
                 int lineIndex = currentText.Substring(0, diffIndex).Count(c => c == '\n');
                 int column = diffIndex - currentText.LastIndexOf('\n', diffIndex >= 1 ? diffIndex - 1 : 0) - 1;
+                
+                int startPartIdx = 0;
+                int partLen = 0;
+                bool isVisited = false;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (i == lineIndex)
+                    {
+                        if (string.IsNullOrWhiteSpace(lines[i]))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            isVisited = true;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(lines[i]))
+                    {
+                        if (isVisited)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            startPartIdx = i + 1;
+                            partLen = 0;
+                        }
+                    }
+                    else
+                    {
+                        partLen++;
+                    }
+                }
+
+                if (isVisited == false || partLen == 0 || startPartIdx >= lines.Length)
+                {
+                    return;
+                }
 
                 var sb = new StringBuilder();
+                
+                if (startPartIdx > 0)
+                {
+                    sb.Append(string.Join("\n", lines.Take(startPartIdx)));
+                    sb.Append("\n"); // строка с idx = startPartIdx точно есть
+                }
 
-                for (int i = 0; i < lines.Length; i++)
+                for (int i = startPartIdx; i < startPartIdx+partLen; i++)
                 {
                     var line = lines[i];
 
@@ -203,6 +257,8 @@ public partial class TabViewModel : ViewModelBase
                     if (i < lines.Length - 1)
                         sb.Append('\n');
                 }
+                
+                sb.Append(string.Join("\n", lines.Skip(startPartIdx + partLen)));
 
                 var result = sb.ToString();
                 Dispatcher.UIThread.Post(() =>

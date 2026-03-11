@@ -20,8 +20,8 @@
     
     <StackPanel>
 
-        <StackPanel Orientation="Horizontal">
-            <ItemsControl ItemsSource="{Binding SelectedHalfToneIdxAndNoteStrs}">
+        <Grid ColumnDefinitions="Auto, *">
+            <ItemsControl Grid.Column="0" ItemsSource="{Binding SelectedHalfToneIdxAndNoteStrs}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ComboBox ItemsSource="{Binding Variants}"
@@ -42,7 +42,8 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             
-            <TextBox Text="{Binding View}" 
+            <TextBox Grid.Column="1" Text="{Binding View}" 
+                     AcceptsReturn="True"
                      FontFamily="Consolas" 
                      FontSize="16" 
                      LineHeight="24" 
@@ -50,10 +51,13 @@
                      Padding="8 0 0 0 ">
                 <TextBox.Styles>
                     <Style Selector="TextBox /template/ TextPresenter">
-                        <Setter Property="Margin" Value="0,0,0,10"/>
+                        <Setter Property="Margin" Value="0,0,0,20"/>
                     </Style>
+                    <!--<Style Selector="TextBox /template/ ScrollViewer">
+                        <Setter Property="HorizontalScrollBarVisibility" Value="Visible"></Setter>
+                    </Style>-->
                 </TextBox.Styles>
             </TextBox>
-        </StackPanel>
+        </Grid>
     </StackPanel>
 </UserControl>

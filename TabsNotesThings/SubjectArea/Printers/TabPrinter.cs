@@ -28,7 +28,7 @@ public class TabPrinter
                 }
                 else
                 {
-                    return "·";
+                    return SpecialSymbols.Instance.Empty.ToString();
                 }
             }).ToArray();
             var maxLen = strs.Max(s => s.Length);
@@ -117,7 +117,7 @@ public class TabPrinter
                 }
                 else
                 {
-                    strs.Add("·");
+                    strs.Add(SpecialSymbols.Instance.Empty.ToString());
                 }
             }
         }

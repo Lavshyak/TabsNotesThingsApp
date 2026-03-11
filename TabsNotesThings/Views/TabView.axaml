@@ -11,11 +11,12 @@
     </Design.DataContext>
     <StackPanel>
         <TextBox IsReadOnly="False" AcceptsReturn="True" Text="{Binding TablatureInputText, Mode=TwoWay}"
+                 TextWrapping="NoWrap"
                  FontFamily="Consolas" FontSize="16" LineHeight="18" Margin="0 0 0 0" Padding="10 0 0 0"
                  BorderBrush="{Binding InputBorderBrush}">
             <TextBox.Styles>
                 <Style Selector="TextBox /template/ TextPresenter">
-                    <Setter Property="Margin" Value="0,0,0,10"/>
+                    <Setter Property="Margin" Value="0,0,0,20"/>
                 </Style>
             </TextBox.Styles>
         </TextBox>
